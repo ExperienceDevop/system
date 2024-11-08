@@ -1,5 +1,6 @@
 {
   "index": {
-    "app_mod": "/app"
+    "app_mod": "/app",
+    "active_directory": "/platform"
   }
 }
