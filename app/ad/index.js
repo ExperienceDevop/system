@@ -1,3 +1,5 @@
+const { threadId } = require('worker_threads')
+
 const ActiveDirectory = class{
   #path
   #fs
@@ -22,7 +24,7 @@ const ActiveDirectory = class{
       temp.base = this.#path.parse (path).base
       temp.root = this.#path.parse (path).root
       temp.path = path
-      temp.count = this.count
+      temp.id = this.count
       this.count ++
 
       if (this.#fs.statSync (temp.path).isFile ())
@@ -47,16 +49,16 @@ const ActiveDirectory = class{
             contentPaths.push (`${temp.path}/${contentFileNames[x]}`)
           }
 
-          obj[temp.count] = temp
+          obj[temp.id] = temp
 
           for (let x in contentPaths)
           {
-            this.#map (contentPaths[x], obj[temp.count].content)
+            this.#map (contentPaths[x], obj[temp.id].content)
           }
         }
         else
         {
-          obj[temp.count] = temp
+          obj[temp.id] = temp
           temp.content = "empty"
         }
       }
@@ -70,9 +72,40 @@ const ActiveDirectory = class{
       console.log ("Exist: no")
     }
   }
-  query ()
+  query (prop)
   {
-    
+    const query = {
+      attribute: prop.attribute,
+      value: prop.value,
+      get: prop.get,
+      recur: prop.recur
+    }
+    this.#get (query, this.fs)
+  }
+  #get (query, obj)
+  {
+    for (let x in obj)
+    {
+      for (let y in obj[x])
+      {
+        if (query.attribute == y)
+        {
+          if (obj[x][y] == query.value)
+          {
+            query.result = {}
+            for (let z in query.get)
+            {
+              query.result[query.get[z]] = obj[x][query.get[z]]
+            }
+            this.Result.push (query.result)
+          }
+        }
+      }
+      this.#get (
+      query,
+      obj[x].content
+      )
+    }
   }
 }
   module.exports = ActiveDirectory
